@@ -1,0 +1,80 @@
+body {
+  background-color: rgb(50, 92, 72);
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 100px;
+}
+
+h1 {
+  color: rgb(219, 199, 12);
+}
+
+p {
+  font-size: 20px;
+  color: #dbd6d6;
+}
+
+.login-container {
+  max-width: 400px;
+  margin: 120px auto;
+  background-color: #e6dbaa;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.login-container input {
+  width: 80%;
+  padding: 12px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+.login-container button {
+  background-color: rgb(163, 127, 50);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.login-container button:hover {
+  background-color: rgb(50, 92, 72);
+}
+.login-container input {
+  display: block;
+  width: 80%;
+  margin: 10px auto;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+.password-box {
+  position: relative;
+  width: 86.5%;
+  margin: 10px auto;
+}
+
+.password-box input {
+  width: 100%;
+  padding: 12px 40px 12px 12px; /* 오른쪽 여백 확보 👈 여기 중요! */
+  font-size: 16px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.toggle-eye {
+  position: absolute;
+  top: 45%;
+  right: 12px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+}

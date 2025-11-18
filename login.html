@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>로그인 | 일렉트리</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h2>로그인</h2>
+    <form onsubmit="login(event)">
+  <input type="text" id="userId" placeholder="강사 ID" required />
+  
+  <div class="password-box">
+    <input type="password" id="password" placeholder="비밀번호" required />
+    <span id="togglePassword" class="toggle-eye">🙈</span>
+  </div>
+
+  <button type="submit">로그인</button>
+</form>
+
+  </div>
+
+  <script>
+    const USERS = [
+      { id: "admin", password: "admin123", role: "admin" },
+      { id: "강사A", password: "passA", role: "instructor" },
+      { id: "강사B", password: "passB", role: "instructor" }
+    ];
+
+    function login(event) {
+      event.preventDefault();
+      const id = document.getElementById("userId").value.trim();
+      const pw = document.getElementById("password").value.trim();
+
+      const user = USERS.find(u => u.id === id && u.password === pw);
+
+      if (!user) {
+        alert("아이디 또는 비밀번호가 틀렸습니다!");
+        return;
+      }
+
+      if (user.role === "admin") {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = `sales.html?instructor=${encodeURIComponent(user.id)}`;
+      }
+    }
+  </script>
+</body>
+</html>
+
+<script>
+  // 로그인 로직은 그대로 유지하고...
+
+  // 👁️ 비밀번호 보기/숨기기 토글
+  const pwInput = document.getElementById("password");
+  const toggleBtn = document.getElementById("togglePassword");
+
+  toggleBtn.addEventListener("click", () => {
+    const isVisible = pwInput.type === "text";
+    pwInput.type = isVisible ? "password" : "text";
+    toggleBtn.textContent = isVisible ? "🙈" : "👀"; // 눈 바꾸기!
+  });
+</script>
