@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>강사 메뉴 | 일렉트리</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="menu-container">
+
+        <!-- ⭐ 로그인한 강사 이름 표시 -->
+        <h2 id="teacherName">강사님 환영합니다!</h2>
+
+        <!-- 메뉴 버튼들 -->
+        <button class="menu-btn" onclick="goPage('sales.html')">매출 현황</button>
+        <button class="menu-btn" onclick="goPage('myshare.html')">이번 달의 정산</button>
+        <button class="menu-btn" onclick="goPage('register.html')">신규/재등록</button>
+        <button class="menu-btn" onclick="goPage('sign.html')">수업 완료 서명하기</button>
+        <button class="menu-btn" onclick="goPage('schedule.html')">수업 예약 / 취소</button>
+        <button class="menu-btn" onclick="goPage('off.html')">OFF 스케줄</button>
+
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+
+    </div>
+
+    <script>
+        // ⭐ 로그인된 강사 체크
+        window.onload = function () {
+            const user = JSON.parse(sessionStorage.getItem("loggedInUser"))
+                       || JSON.parse(localStorage.getItem("loggedInUser"));
+
+            // 로그인 정보 없거나 강사가 아니면 접근 차단
+            if (!user || user.role !== "instructor") {
+                alert("접근 권한이 없습니다!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // 강사 이름 표시
+            document.getElementById("teacherName").textContent =
+                `${user.id}님 환영합니다!`;
+        };
+
+        // ⭐ 메뉴 이동 함수
+        function goPage(page) {
+            const user = JSON.parse(sessionStorage.getItem("loggedInUser"))
+                       || JSON.parse(localStorage.getItem("loggedInUser"));
+
+            if (!user) {
+                alert("다시 로그인 해주세요!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // instructor 이름을 URL에 포함해서 전달
+            window.location.href = `${page}?instructor=${encodeURIComponent(user.id)}`;
+        }
+
+        // ⭐ 로그아웃
+        function logout() {
+            sessionStorage.removeItem("loggedInUser");
+            localStorage.removeItem("loggedInUser"); // 자동 로그인도 해제
+            window.location.href = "login.html";
+        }
+    </script>
+
+</body>
+</html>

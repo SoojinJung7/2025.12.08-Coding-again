@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>신규 / 재등록</title>
+
+<style>
+    body {
+        font-family: 'Pretendard', sans-serif;
+        background: #f3e5b5;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+
+    .container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #3a2d0b;
+        margin-bottom: 25px;
+    }
+
+    .box {
+        background: #fff;
+        border-radius: 12px;
+        padding: 25px;
+        text-align: left;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    label {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #4b3b16;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border: 1px solid #c8b27a;
+        border-radius: 8px;
+        margin-bottom: 18px;
+        box-sizing: border-box;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 18px;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .btn-next {
+        background: #c89c4f;
+        color: white;
+    }
+
+    .btn-next:active {
+        background: #b7863f;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>신규 / 재등록</h1>
+
+    <div class="box">
+
+        <label>회원 이름</label>
+        <input type="text" id="name" placeholder="예: 홍길동">
+
+        <label>연락처</label>
+        <input type="text" id="phone" placeholder="예: 010-1234-5678">
+
+        <label>회원 유형</label>
+        <select id="memberType">
+            <option value="">선택</option>
+            <option>회원</option>
+            <option>비회원</option>
+        </select>
+
+        <label>운동 종류</label>
+        <select id="exercise">
+            <option value="">선택</option>
+            <option>PT</option>
+            <option>PILA</option>
+            <option>GYRO</option>
+            <option>듀엣</option>
+            <option>소그룹</option>
+        </select>
+
+        <label>횟수</label>
+        <input type="number" id="count" placeholder="예: 12">
+
+        <label>단가 (원)</label>
+        <input type="number" id="price" placeholder="예: 70000">
+
+        <label>결제 방식</label>
+        <select id="payment">
+            <option value="">선택</option>
+            <option>계좌이체</option>
+            <option>카드</option>
+            <option>현금</option>
+        </select>
+
+        <button class="btn btn-next" onclick="nextStep()">다음 단계</button>
+    </div>
+
+</div>
+
+
+<script>
+function nextStep() {
+    const name = nameInput.value.trim();
+    const phone = phoneInput.value.trim();
+    const memberType = memberTypeInput.value;
+    const exercise = exerciseInput.value;
+    const count = countInput.value.trim();
+    const price = priceInput.value.trim();
+    const payment = paymentInput.value;
+
+    if (!name || !phone || !memberType || !exercise || !count || !price || !payment) {
+        alert("모든 항목을 입력해주세요!");
+        return;
+    }
+
+    const params = new URLSearchParams({
+        name, phone, memberType, exercise, count, price, payment
+    });
+
+    location.href = "confirm.html?" + params.toString();
+}
+
+// DOM Shortcuts
+const nameInput = document.getElementById("name");
+const phoneInput = document.getElementById("phone");
+const memberTypeInput = document.getElementById("memberType");
+const exerciseInput = document.getElementById("exercise");
+const countInput = document.getElementById("count");
+const priceInput = document.getElementById("price");
+const paymentInput = document.getElementById("payment");
+</script>
+
+</body>
+</html>

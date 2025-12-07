@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>내용 확인</title>
+
+<style>
+    body {
+        font-family: 'Pretendard', sans-serif;
+        background: #f3e5b5;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+
+    .container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #3a2d0b;
+    }
+
+    .box {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        text-align: left;
+        margin-bottom: 20px;
+    }
+
+    .term-box {
+        margin-top: 20px;
+        background: #f7f0da;
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 18px;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .btn-submit {
+        background: #c89c4f;
+        color: white;
+    }
+
+    .btn-submit:active { background: #b7863f; }
+
+    .btn-back {
+        background: #a7895a;
+        color: white;
+    }
+
+    .btn-back:active { background: #8b7246; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>입력 내용 확인</h1>
+
+    <div class="box" id="infoBox"></div>
+
+    <div class="term-box">
+        <b>약관 안내</b><br><br>
+
+        1. 수업 변경 및 취소는 수강일 12시간 전까지 가능합니다.<br>
+        2. 부상·사고 관련 책임은 본인에게 있습니다.<br>
+        3. 1:1, 듀엣 수업은 8주 내 소진을 권장합니다.<br>
+        4. 환불 관련 사항은 내부 방침을 따라야 합니다.<br>
+        5. 기타 운영 규정을 준수해야 합니다.
+    </div>
+
+    <button class="btn btn-back" onclick="history.back()">이전</button>
+    <button class="btn btn-submit" onclick="submitData()">등록 완료</button>
+</div>
+
+
+<script>
+const params = new URLSearchParams(location.search);
+
+const data = {
+    name: params.get("name"),
+    phone: params.get("phone"),
+    memberType: params.get("memberType"),
+    exercise: params.get("exercise"),
+    count: params.get("count"),
+    price: params.get("price"),
+    payment: params.get("payment")
+};
+
+document.getElementById("infoBox").innerHTML = `
+    <p><b>회원 이름:</b> ${data.name}</p>
+    <p><b>연락처:</b> ${data.phone}</p>
+    <p><b>회원 유형:</b> ${data.memberType}</p>
+    <p><b>운동 종류:</b> ${data.exercise}</p>
+    <p><b>횟수:</b> ${data.count}</p>
+    <p><b>단가:</b> ${data.price}원</p>
+    <p><b>결제 방식:</b> ${data.payment}</p>
+`;
+
+function submitData() {
+    alert("등록이 완료되었습니다! 🎉");
+    location.href = "menu.html"; // 원하는 페이지로 변경 가능
+}
+</script>
+
+</body>
+</html>
+

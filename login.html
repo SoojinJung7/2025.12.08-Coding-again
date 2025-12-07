@@ -5,33 +5,84 @@
   <title>로그인 | 일렉트리</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="login-container">
     <h2>로그인</h2>
+
     <form onsubmit="login(event)">
-  <input type="text" id="userId" placeholder="강사 ID" required />
-  
-  <div class="password-box">
-    <input type="password" id="password" placeholder="비밀번호" required />
-    <span id="togglePassword" class="toggle-eye">🙈</span>
+
+      <!-- ID 입력 -->
+      <div class="input-box">
+        <input type="text" id="userId" placeholder="강사 ID" required />
+      </div>
+
+      <!-- 비밀번호 입력 -->
+      <div class="password-box">
+        <input
+          type="password"
+          id="password"
+          placeholder="비밀번호"
+          required
+          inputmode="latin"
+          autocomplete="new-password"
+          autocorrect="off"
+          spellcheck="false"
+        />
+        <span id="togglePassword" class="toggle-eye">🙈</span>
+      </div>
+
+      <!-- 로그인 상태 유지 + IP 보안 -->
+      <div class="remember-security-row">
+        <label class="remember-left">
+          <input type="checkbox" id="autoLogin">
+          로그인 상태 유지
+        </label>
+
+        <label class="security-right">
+          IP 보안
+          <label class="switch">
+            <input type="checkbox" id="ipSecurity">
+            <span class="slider"></span>
+          </label>
+        </label>
+      </div>
+
+      <!-- 로그인 버튼 -->
+      <button type="submit" class="login-btn">로그인</button>
+    </form>
   </div>
 
-  <button type="submit">로그인</button>
-</form>
-
-  </div>
-
+  <!-- ⭐ 자동 로그인 체크 -->
   <script>
     const USERS = [
-      { id: "admin", password: "admin123", role: "admin" },
+      { id: "admin", password: "Aveeno10!", role: "admin" },
       { id: "강사A", password: "passA", role: "instructor" },
       { id: "강사B", password: "passB", role: "instructor" }
     ];
 
+    // ✔ 자동 로그인(localStorage만 확인)
+    window.onload = function () {
+      const savedUser = localStorage.getItem("loggedInUser");
+
+      if (savedUser) {
+        const user = JSON.parse(savedUser);
+
+        if (user.role === "admin") {
+          window.location.href = "admin.html";
+        } else {
+          window.location.href = "menu.html";
+        }
+      }
+    };
+
+    // ✔ 로그인 함수
     function login(event) {
       event.preventDefault();
+
       const id = document.getElementById("userId").value.trim();
       const pw = document.getElementById("password").value.trim();
+      const auto = document.getElementById("autoLogin").checked;
 
       const user = USERS.find(u => u.id === id && u.password === pw);
 
@@ -40,26 +91,34 @@
         return;
       }
 
+      // ✔ 항상 sessionStorage 저장
+      sessionStorage.setItem("loggedInUser", JSON.stringify(user));
+
+      // ✔ 자동 로그인 체크하면 localStorage도 저장
+      if (auto) {
+        localStorage.setItem("loggedInUser", JSON.stringify(user));
+      }
+
+      // ✔ 페이지 이동
       if (user.role === "admin") {
-        window.location.href = 'admin.html';
+        window.location.href = "admin.html";
       } else {
-        window.location.href = `sales.html?instructor=${encodeURIComponent(user.id)}`;
+        window.location.href = `menu.html?instructor=${encodeURIComponent(user.id)}`;
       }
     }
   </script>
+
+  <!-- ⭐ 비밀번호 보기 토글 -->
+  <script>
+    const pwInput = document.getElementById("password");
+    const toggleBtn = document.getElementById("togglePassword");
+
+    toggleBtn.addEventListener("click", () => {
+      const isVisible = pwInput.type === "text";
+      pwInput.type = isVisible ? "password" : "text";
+      toggleBtn.textContent = isVisible ? "🙈" : "👀";
+    });
+  </script>
+
 </body>
 </html>
-
-<script>
-  // 로그인 로직은 그대로 유지하고...
-
-  // 👁️ 비밀번호 보기/숨기기 토글
-  const pwInput = document.getElementById("password");
-  const toggleBtn = document.getElementById("togglePassword");
-
-  toggleBtn.addEventListener("click", () => {
-    const isVisible = pwInput.type === "text";
-    pwInput.type = isVisible ? "password" : "text";
-    toggleBtn.textContent = isVisible ? "🙈" : "👀"; // 눈 바꾸기!
-  });
-</script>

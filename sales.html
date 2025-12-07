@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>매출 현황 | 일렉트리</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div class="sales-container">
+
+        <h2 id="titleText">매출 현황</h2>
+
+        <!-- 이번 달 매출 박스 -->
+        <div class="summary-box">
+            <h3>이번 달 매출</h3>
+            <p id="monthSales">0 원</p>
+        </div>
+
+        <!-- 매출 내역 -->
+        <div class="table-box">
+            <h3>매출 내역</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>날짜</th>
+                        <th>수업</th>
+                        <th>금액</th>
+                        <th>입금 확인</th>
+                    </tr>
+                </thead>
+                <tbody id="salesTable"></tbody>
+            </table>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+
+    </div>
+
+
+<script>
+/* ===========================================================
+    🔥 전역 변수 (현재 강사 저장 → 실시간 계산용)
+=========================================================== */
+let CURRENT_TEACHER = null;
+
+/* ===========================================================
+    더미 매출 데이터
+=========================================================== */
+const SALES_DATA = {
+    "강사A": [
+        { id: "A1", date: "2025-11-05", class: "기본 PT", price: 50000 },
+        { id: "A2", date: "2025-11-10", class: "재등록 PT", price: 150000 },
+        { id: "A3", date: "2025-11-12", class: "상담", price: 30000 }
+    ],
+    "강사B": [
+        { id: "B1", date: "2025-11-03", class: "기본 PT", price: 60000 },
+        { id: "B2", date: "2025-11-11", class: "재등록 PT", price: 120000 }
+    ]
+};
+
+
+/* ===========================================================
+    페이지 접근 체크
+=========================================================== */
+window.onload = function () {
+
+    const user = JSON.parse(sessionStorage.getItem("loggedInUser")) ||
+                 JSON.parse(localStorage.getItem("loggedInUser"));
+
+    if (!user) {
+        alert("로그인이 필요합니다!");
+        window.location.href = "login.html";
+        return;
+    }
+
+    // 관리자 접근 가능
+    if (user.role === "admin") {
+        loadSales("강사A");
+        return;
+    }
+
+    // 강사 본인 확인
+    const teacher = new URLSearchParams(window.location.search).get("instructor");
+
+    if (!teacher || teacher !== user.id) {
+        alert("접근 권한이 없습니다!");
+        window.location.href = "login.html";
+        return;
+    }
+
+    loadSales(teacher);
+};
+
+
+/* ===========================================================
+    매출 로딩 + 체크박스 반영 로직
+=========================================================== */
+function loadSales(teacher) {
+
+    // ⭐ 현재 강사 저장 → 실시간 계산에서 사용됨
+    CURRENT_TEACHER = teacher;
+
+    document.getElementById("titleText").textContent =
+        `${teacher}님의 매출 현황`;
+
+    const month = new Date().getMonth() + 1;
+    const list = SALES_DATA[teacher] || [];
+    const table = document.getElementById("salesTable");
+    table.innerHTML = "";
+
+    let monthTotal = 0;
+
+    list.forEach(v => {
+        const isThisMonth = parseInt(v.date.substring(5, 7)) === month;
+
+        const checked = localStorage.getItem(`paid_${v.id}`) === "true";
+
+        if (isThisMonth && checked) monthTotal += v.price;
+
+        table.innerHTML += `
+            <tr>
+                <td>${v.date}</td>
+                <td>${v.class}</td>
+                <td>${v.price.toLocaleString()} 원</td>
+                <td>
+                    <input type="checkbox"
+                           class="paid-check"
+                           data-id="${v.id}"
+                           ${checked ? "checked" : ""}>
+                </td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("monthSales").textContent =
+        monthTotal.toLocaleString() + " 원";
+
+    // 🔥 체크박스(입금 확인) 클릭 → 실시간 계산
+    document.querySelectorAll(".paid-check").forEach(chk => {
+        chk.addEventListener("change", function () {
+
+            const id = this.getAttribute("data-id");
+            localStorage.setItem(`paid_${id}`, this.checked);
+
+            // ⭐ "teacher" 다시 계산 함수에 전달할 필요 없음 → CURRENT_TEACHER 사용
+            recalcMonthSales();
+        });
+    });
+}
+
+
+/* ===========================================================
+    실시간 이번 달 매출 재계산 (테이블 다시 안 만듦)
+=========================================================== */
+function recalcMonthSales() {
+
+    const teacher = CURRENT_TEACHER;  // ⭐ 전역 변수 사용!
+    const month = new Date().getMonth() + 1;
+    const list = SALES_DATA[teacher] || [];
+
+    let total = 0;
+
+    list.forEach(v => {
+        const isThisMonth = parseInt(v.date.substring(5, 7)) === month;
+        const checked = localStorage.getItem(`paid_${v.id}`) === "true";
+
+        if (isThisMonth && checked) total += v.price;
+    });
+
+    document.getElementById("monthSales").textContent =
+        total.toLocaleString() + " 원";
+}
+
+
+/* ===========================================================
+    로그아웃
+=========================================================== */
+function logout() {
+    sessionStorage.removeItem("loggedInUser");
+    localStorage.removeItem("loggedInUser");
+    window.location.href = "login.html";
+}
+</script>
+
+
+</body>
+</html>

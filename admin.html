@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>관리자 페이지 | 일렉트리</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div class="admin-container">
+
+        <h2>관리자 대시보드</h2>
+
+        <!-- 상단 요약 박스 -->
+        <div class="summary-box">
+            <div class="summary-item">
+                <h3>전체 매출</h3>
+                <p id="totalSales">0 원</p>
+            </div>
+            <div class="summary-item">
+                <h3>이번 달 매출</h3>
+                <p id="monthSales">0 원</p>
+            </div>
+            <div class="summary-item">
+                <h3>강사 수</h3>
+                <p id="teacherCount">0 명</p>
+            </div>
+        </div>
+
+        <!-- 강사별 매출 표 -->
+        <div class="table-box">
+            <h3>강사별 매출 현황</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>강사 이름</th>
+                        <th>총 매출</th>
+                        <th>이번 달 매출</th>
+                        <th>최근 등록일</th>
+                    </tr>
+                </thead>
+                <tbody id="teacherTable"></tbody>
+            </table>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+
+    </div>
+
+    <script>
+        // ⭐ 접근 권한 체크(세션 → 자동로그인 순으로 확인)
+        window.onload = function () {
+            let user = sessionStorage.getItem("loggedInUser");
+
+            if (!user) {
+                user = localStorage.getItem("loggedInUser");
+            }
+
+            if (!user) {
+                alert("접근 권한이 없습니다!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            user = JSON.parse(user);
+
+            if (user.role !== "admin") {
+                alert("접근 권한이 없습니다!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            loadDashboard();
+        };
+
+        // ⭐ 더미 매출 데이터
+        const SALES = [
+            { instructor: "강사A", total: 1200000, month: 300000, last: "2025-01-12" },
+            { instructor: "강사B", total: 900000, month: 200000, last: "2025-01-10" }
+        ];
+
+        // ⭐ 대시보드 표시
+        function loadDashboard() {
+            document.getElementById("totalSales").textContent =
+                SALES.reduce((sum, v) => sum + v.total, 0).toLocaleString() + " 원";
+
+            document.getElementById("monthSales").textContent =
+                SALES.reduce((sum, v) => sum + v.month, 0).toLocaleString() + " 원";
+
+            document.getElementById("teacherCount").textContent = SALES.length + " 명";
+
+            const table = document.getElementById("teacherTable");
+            table.innerHTML = "";
+
+            SALES.forEach(v => {
+                table.innerHTML += `
+                    <tr>
+                        <td>${v.instructor}</td>
+                        <td>${v.total.toLocaleString()} 원</td>
+                        <td>${v.month.toLocaleString()} 원</td>
+                        <td>${v.last}</td>
+                    </tr>
+                `;
+            });
+        }
+
+    // ⭐ 로그아웃
+    function logout() {
+        sessionStorage.removeItem("loggedInUser");
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "login.html";
+    }
+</script>
+
+<!-- ⭐ OFF 스케줄 캘린더 버튼 -->
+<button onclick="location.href='admin_off.html'" class="off-calendar-btn">
+    OFF 스케줄 캘린더 보기
+</button>
+
+</body>
+</html>

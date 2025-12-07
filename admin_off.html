@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>OFF 스케줄 캘린더 | 관리자</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .calendar-container {
+      max-width: 900px;
+      margin: 50px auto;
+      background: #fff4d1;
+      padding: 25px;
+      border-radius: 12px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .calendar-header h2 {
+      margin: 0;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .calendar-cell {
+      background: #fffdf3;
+      border: 1px solid #d7c69a;
+      border-radius: 8px;
+      min-height: 90px;
+      padding: 5px;
+      position: relative;
+    }
+
+    .day-number {
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .off-tag {
+      background: #d9a7ff;
+      padding: 3px 5px;
+      border-radius: 5px;
+      font-size: 12px;
+      margin-top: 2px;
+      color: #fff;
+    }
+
+    .off-a { background: #ff7f7f; }
+    .off-b { background: #7fb3ff; }
+    .off-c { background: #90c27b; }
+
+    /* ----- 모달 ----- */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-box {
+      background: white;
+      width: 380px;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .modal-box h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .close-btn {
+      background: #888;
+      padding: 6px 12px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    .delete-btn {
+      background: #c0392b;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+
+
+<body>
+
+<div class="calendar-container">
+  <div class="calendar-header">
+    <button onclick="changeMonth(-1)">◀</button>
+    <h2 id="monthLabel">2025 - 01</h2>
+    <button onclick="changeMonth(1)">▶</button>
+  </div>
+
+  <div class="calendar-grid" id="calendarGrid"></div>
+
+  <button class="logout-btn" onclick="logout()">로그아웃</button>
+</div>
+
+
+<!-- 상세 모달 -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal-box" id="modalBox">
+    <h3>OFF 상세 정보</h3>
+    <div id="modalContent"></div>
+
+    <div style="margin-top:12px;">
+      <span class="close-btn" onclick="closeModal()">닫기</span>
+      <span class="delete-btn" onclick="deleteOff()">삭제</span>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* 저장된 OFF 데이터 불러오기 */
+function loadOffData() {
+  try {
+    return JSON.parse(localStorage.getItem("offSchedules")) || [];
+  } catch {
+    return [];
+  }
+}
+
+/* 현재 연/월 */
+let current = new Date();
+let currentYear = current.getFullYear();
+let currentMonth = current.getMonth() + 1;
+
+/* 선택된 OFF */
+let selectedOff = null;
+
+/* 초기 로드 */
+window.onload = function () {
+  const user = JSON.parse(sessionStorage.getItem("loggedInUser")) ||
+               JSON.parse(localStorage.getItem("loggedInUser"));
+
+  if (!user || user.role !== "admin") {
+    alert("관리자만 접근할 수 있습니다.");
+    location.href = "login.html";
+    return;
+  }
+
+  renderCalendar();
+};
+
+/* 월 변경 */
+function changeMonth(diff) {
+  currentMonth += diff;
+
+  if (currentMonth < 1) {
+    currentMonth = 12;
+    currentYear--;
+  } else if (currentMonth > 12) {
+    currentMonth = 1;
+    currentYear++;
+  }
+
+  renderCalendar();
+}
+
+/* 달력 렌더링 */
+function renderCalendar() {
+  document.getElementById("monthLabel").innerText =
+    `${currentYear}년 ${String(currentMonth).padStart(2, "0")}월`;
+
+  const grid = document.getElementById("calendarGrid");
+  grid.innerHTML = "";
+
+  const first = new Date(currentYear, currentMonth - 1, 1);
+  const days = new Date(currentYear, currentMonth, 0).getDate();
+  const startDay = first.getDay();
+
+  const offs = loadOffData();
+
+  const weekdays = ["일","월","화","수","목","금","토"];
+  weekdays.forEach(d => {
+    const div = document.createElement("div");
+    div.innerHTML = `<b>${d}</b>`;
+    grid.appendChild(div);
+  });
+
+  for (let i = 0; i < startDay; i++) {
+    grid.innerHTML += `<div></div>`;
+  }
+
+  for (let day = 1; day <= days; day++) {
+    const dateStr = `${currentYear}-${String(currentMonth).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+
+    const cell = document.createElement("div");
+    cell.className = "calendar-cell";
+    cell.innerHTML = `<div class="day-number">${day}</div>`;
+
+    const todaysOff = offs.filter(v => {
+      const start = new Date(v.startDate);
+      const end = new Date(v.endDate || v.startDate);
+      const thisDay = new Date(dateStr);
+      return thisDay >= start && thisDay <= end;
+    });
+
+    todaysOff.forEach(off => {
+      const tag = document.createElement("div");
+      tag.className = "off-tag off-" + off.color;
+      tag.innerText = `${off.instructor} (${off.type})`;
+      tag.onclick = () => openModal(off);
+      cell.appendChild(tag);
+    });
+
+    grid.appendChild(cell);
+  }
+}
+
+/* 모달 열기 */
+function openModal(off) {
+  selectedOff = off;
+  const box = document.getElementById("modalContent");
+
+  box.innerHTML = `
+    <p><b>강사:</b> ${off.instructor}</p>
+    <p><b>유형:</b> ${off.type}</p>
+    <p><b>시작:</b> ${off.startDate}</p>
+    <p><b>끝:</b> ${off.endDate || "-"}</p>
+    <p><b>비고:</b> ${off.note || "-"}</p>
+  `;
+
+  document.getElementById("modalBg").style.display = "flex";
+}
+
+/* 모달 닫기 */
+function closeModal() {
+  document.getElementById("modalBg").style.display = "none";
+}
+
+/* 삭제 */
+function deleteOff() {
+  if (!selectedOff) return;
+
+  let list = loadOffData();
+  list = list.filter(v => v.id !== selectedOff.id);
+
+  localStorage.setItem("offSchedules", JSON.stringify(list));
+
+  closeModal();
+  renderCalendar();
+  alert("삭제 완료!");
+}
+
+/* 로그아웃 */
+function logout() {
+  sessionStorage.removeItem("loggedInUser");
+  localStorage.removeItem("loggedInUser");
+  location.href = "login.html";
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>나의 OFF 스케줄 통보</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+<style>
+    body {
+        font-family: 'Pretendard', sans-serif;
+        background: #f3e5b5;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+    }
+
+    .container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px 18px 60px;
+    }
+
+    h1 {
+        font-size: 26px;
+        margin-bottom: 28px;
+        font-weight: 700;
+        color: #3a2d0b;
+    }
+
+    /* 날짜 + 유형 */
+    .date-type-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        margin-bottom: 20px;
+    }
+
+    .date-column {
+        text-align: left;
+    }
+
+    .type-column {
+        text-align: left;
+        background: #f8efd9;
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px solid #d1c39b;
+    }
+
+    .type-column label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        margin-bottom: 6px;
+    }
+
+    label {
+        font-size: 15px;
+        font-weight: 600;
+        color: #4b3b16;
+    }
+
+    input[type="date"] {
+        width: 94.5%;
+        padding: 12px;
+        margin-top: 6px;
+        border: 1px solid #c8b27a;
+        border-radius: 8px;
+        font-size: 16px;
+        background: white;
+    }
+
+    textarea {
+        width: 100%;
+        height: 140px;
+        padding: 12px;
+        margin-top: 8px;
+        border: 1px solid #c8b27a;
+        border-radius: 8px;
+        font-size: 16px;
+        resize: none;
+        box-sizing: border-box;
+    }
+
+    /* 버튼 */
+    .btn {
+        width: 100%;
+        padding: 18px;
+        margin-top: 16px;
+        border: none;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.15s;
+    }
+
+    .btn-save {
+        background: #c89c4f;
+        color: white;
+    }
+    .btn-save:active {
+        background: #b7863f;
+    }
+
+    .btn-toggle {
+        background: #a7895a;
+        color: white;
+    }
+    .btn-toggle:active {
+        background: #8b7246;
+    }
+
+    /* 내역 전체 박스 */
+    #historyBox {
+        margin-top: 28px;
+        padding: 20px;
+        background: #f7f0da;
+        border-radius: 12px;
+        border: 1px solid #d1c39b;
+        display: none;
+        text-align: left;
+    }
+
+    /* OFF 카드 */
+    .history-item {
+        background: white;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 18px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.12);
+        position: relative;
+    }
+
+    .history-date {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #3c2e12;
+    }
+
+    .history-sub {
+        font-size: 14px;
+        color: #5a4a22;
+        margin-bottom: 14px;
+        line-height: 1.45;
+    }
+
+    .del-btn {
+        background: #d46a6a;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+    }
+    .del-btn:active {
+        background: #c05656;
+    }
+
+    @media (max-width: 420px) {
+        h1 { font-size: 23px; }
+
+        .btn {
+            font-size: 17px;
+            padding: 17px;
+        }
+    }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>나의 OFF 스케줄 통보</h1>
+
+    <!-- 날짜 + 유형 -->
+    <div class="date-type-wrapper">
+
+        <div class="date-column">
+            <label>시작 날짜</label>
+            <input type="date" id="startDate">
+        </div>
+
+        <div class="date-column">
+            <label>끝 날짜 (선택)</label>
+            <input type="date" id="endDate">
+        </div>
+
+        <div class="type-column">
+            <label class="type-label">유형</label>
+            <label><input type="radio" name="type" value="full" checked> 전일</label>
+            <label><input type="radio" name="type" value="am"> 오전</label>
+            <label><input type="radio" name="type" value="pm"> 오후</label>
+        </div>
+
+    </div>
+
+    <!-- 비고 -->
+    <div class="note-wrapper">
+        <label>비고 (선택)</label>
+        <textarea id="note" placeholder="기록을 희망할 경우에만 작성"></textarea>
+    </div>
+
+    <!-- 버튼 -->
+    <button id="submitBtn" class="btn btn-save" onclick="saveOff()">OFF 스케줄 저장하기</button>
+    <button id="toggleHistory" class="btn btn-toggle" onclick="toggleHistory()">나의 OFF 내역 보기</button>
+
+    <!-- 내역창 -->
+    <div id="historyBox">
+        <h3 style="text-align:center; margin-top:0; margin-bottom:15px;">나의 OFF 내역</h3>
+        <div id="historyList"></div>
+    </div>
+
+</div>
+
+<script>
+/* === Cloudflare Worker 주소 === */
+const API_URL = "https://off-schedule.3f-health.workers.dev/off";
+
+/* 저장 */
+function saveOff() {
+    const start = document.getElementById("startDate").value;
+    const end = document.getElementById("endDate").value;
+    const note = document.getElementById("note").value;
+    const type = document.querySelector("input[name='type']:checked").value;
+
+    if (!start) return alert("시작 날짜를 입력해주세요!");
+
+    const instructor = new URLSearchParams(location.search).get("instructor") || "이름없음";
+
+    fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            instructor,
+            type,
+            startDate: start,
+            endDate: end,
+            note
+        })
+    })
+        .then(r => r.json())
+        .then(d => {
+            if (!d.ok) return alert("등록 실패\n" + JSON.stringify(d));
+            alert("저장되었습니다!");
+            loadHistory();
+        });
+}
+
+
+/* 펼치기/접기 */
+function toggleHistory() {
+    const box = document.getElementById("historyBox");
+    if (box.style.display === "none") {
+        box.style.display = "block";
+        loadHistory();
+    } else {
+        box.style.display = "none";
+    }
+}
+
+/* 내역 불러오기 */
+function loadHistory() {
+    const instructor = new URLSearchParams(location.search).get("instructor") || "이름없음";
+
+    fetch(`${API_URL}?instructor=${encodeURIComponent(instructor)}`)
+        .then(r => r.json())
+        .then(d => {
+            if (!d.ok) return;
+
+            const list = d.items;
+            const box = document.getElementById("historyList");
+            box.innerHTML = "";
+
+            if (list.length === 0) {
+                box.innerHTML = "<p style='text-align:center;'>표시할 OFF 기록이 없습니다.</p>";
+                return;
+            }
+
+            list.forEach(ev => {
+                const div = document.createElement("div");
+                div.className = "history-item";
+
+                /* 한국식 날짜 변환 */
+                const createdDate = new Date(ev.created);
+                const local = createdDate.toLocaleString("ko-KR", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true
+                });
+
+                div.innerHTML = `
+                    <div class="history-date">${ev.startDate} ~ ${ev.endDate} (${ev.typeLabel})</div>
+                    <div class="history-sub">
+                        신청일: ${local}<br>
+                        비고: ${ev.note || "없음"}
+                    </div>
+                    ${ev.deletable ? `<button class="del-btn" onclick="deleteOff('${ev.id}')">삭제</button>` : ""}
+                `;
+
+                box.appendChild(div);
+            });
+        });
+}
+
+/* 삭제 */
+function deleteOff(eventId) {
+    if (!confirm("이 기록을 삭제할까요?")) return;
+
+    fetch(`${API_URL}?eventId=${eventId}`, { method: "DELETE" })
+        .then(r => r.json())
+        .then(d => {
+            if (!d.ok) return alert("삭제 실패");
+            alert("삭제되었습니다!");
+            loadHistory();
+        });
+}
+</script>
+
+</body>
+</html>
