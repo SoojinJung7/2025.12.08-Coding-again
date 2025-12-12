@@ -18,24 +18,54 @@
         </div>
 
         <!-- 매출 내역 -->
-        <div class="table-box">
-            <h3>매출 내역</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>날짜</th>
-                        <th>수업</th>
-                        <th>금액</th>
-                        <th>입금 확인</th>
-                    </tr>
-                </thead>
-                <tbody id="salesTable"></tbody>
-            </table>
-        </div>
+       <!-- 이번 달 매출 (테이블/없음 문구 영역) -->
+<div class="table-box">
+    <h3>이번 달 매출 내역</h3>
 
-        <button class="logout-btn" onclick="logout()">로그아웃</button>
+    <!-- 이번 달 매출이 없을 때 표시 -->
+    <p id="thisMonthEmpty" class="empty-msg" style="display:none;">
+        이번 달 매출은 없습니다
+    </p>
 
+    <!-- 이번 달 매출이 있을 때만 테이블 표시 -->
+    <table id="thisMonthTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>날짜</th>
+                <th>수업</th>
+                <th>금액</th>
+                <th>입금 확인</th>
+            </tr>
+        </thead>
+        <tbody id="thisMonthBody"></tbody>
+    </table>
+</div>
+
+<!-- 지난 달 매출 (토글) -->
+<div class="table-box">
+    <button type="button" class="toggle-btn" id="lastMonthToggle" aria-expanded="false">
+        지난 달의 매출 <span id="toggleIcon">▾</span>
+    </button>
+
+    <div id="lastMonthPanel" style="display:none; margin-top:12px;">
+        <p id="lastMonthEmpty" class="empty-msg" style="display:none;">
+            지난 달 매출은 없습니다
+        </p>
+
+        <table id="lastMonthTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>날짜</th>
+                    <th>수업</th>
+                    <th>금액</th>
+                    <th>입금 확인</th>
+                </tr>
+            </thead>
+            <tbody id="lastMonthBody"></tbody>
+        </table>
     </div>
+</div>
+
 
 
 <script>
@@ -92,62 +122,140 @@ window.onload = function () {
     loadSales(teacher);
 };
 
+// 지난 달 토글
+document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("lastMonthToggle");
+    const panel = document.getElementById("lastMonthPanel");
+    const icon = document.getElementById("toggleIcon");
+
+    if (!btn || !panel || !icon) return;
+
+    btn.addEventListener("click", () => {
+        const isOpen = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", String(!isOpen));
+        panel.style.display = isOpen ? "none" : "block";
+        icon.textContent = isOpen ? "▾" : "▴";
+    });
+});
+
+
+
 
 /* ===========================================================
     매출 로딩 + 체크박스 반영 로직
 =========================================================== */
 function loadSales(teacher) {
-
-    // ⭐ 현재 강사 저장 → 실시간 계산에서 사용됨
     CURRENT_TEACHER = teacher;
 
     document.getElementById("titleText").textContent =
         `${teacher}님의 매출 현황`;
 
-    const month = new Date().getMonth() + 1;
-    const list = SALES_DATA[teacher] || [];
-    const table = document.getElementById("salesTable");
-    table.innerHTML = "";
+    const now = new Date();
+    const thisMonth = now.getMonth() + 1;
 
-    let monthTotal = 0;
+    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonth = lastMonthDate.getMonth() + 1;
+    const lastMonthYear = lastMonthDate.getFullYear();
+
+    const list = SALES_DATA[teacher] || [];
+
+    // DOM
+    const thisMonthBody = document.getElementById("thisMonthBody");
+    const lastMonthBody = document.getElementById("lastMonthBody");
+
+    const thisMonthTable = document.getElementById("thisMonthTable");
+    const lastMonthTable = document.getElementById("lastMonthTable");
+
+    const thisMonthEmpty = document.getElementById("thisMonthEmpty");
+    const lastMonthEmpty = document.getElementById("lastMonthEmpty");
+
+    // 초기화
+    thisMonthBody.innerHTML = "";
+    lastMonthBody.innerHTML = "";
+
+    let thisMonthRowsCount = 0;
+    let lastMonthRowsCount = 0;
+    let monthTotal = 0; // "이번 달 매출(입금 확인 체크된 것만)" 합계
 
     list.forEach(v => {
-        const isThisMonth = parseInt(v.date.substring(5, 7)) === month;
+        const year = parseInt(v.date.substring(0, 4), 10);
+        const month = parseInt(v.date.substring(5, 7), 10);
 
         const checked = localStorage.getItem(`paid_${v.id}`) === "true";
 
+        // 이번 달 / 지난 달 판별
+        const isThisMonth = (month === thisMonth && year === now.getFullYear());
+        const isLastMonth = (month === lastMonth && year === lastMonthYear);
+
+        // 이번 달 매출 합계(입금 확인된 것만)
         if (isThisMonth && checked) monthTotal += v.price;
 
-        table.innerHTML += `
-            <tr>
-                <td>${v.date}</td>
-                <td>${v.class}</td>
-                <td>${v.price.toLocaleString()} 원</td>
-                <td>
-                    <input type="checkbox"
-                           class="paid-check"
-                           data-id="${v.id}"
-                           ${checked ? "checked" : ""}>
-                </td>
-            </tr>
-        `;
+        // 렌더링은 "이번 달 테이블" 또는 "지난 달 테이블"로 분기
+        if (isThisMonth) {
+            thisMonthRowsCount++;
+            thisMonthBody.innerHTML += `
+                <tr>
+                    <td>${v.date}</td>
+                    <td>${v.class}</td>
+                    <td>${v.price.toLocaleString()} 원</td>
+                    <td>
+                        <input type="checkbox"
+                               class="paid-check"
+                               data-id="${v.id}"
+                               ${checked ? "checked" : ""}>
+                    </td>
+                </tr>
+            `;
+        } else if (isLastMonth) {
+            lastMonthRowsCount++;
+            lastMonthBody.innerHTML += `
+                <tr>
+                    <td>${v.date}</td>
+                    <td>${v.class}</td>
+                    <td>${v.price.toLocaleString()} 원</td>
+                    <td>
+                        <input type="checkbox"
+                               class="paid-check"
+                               data-id="${v.id}"
+                               ${checked ? "checked" : ""}>
+                    </td>
+                </tr>
+            `;
+        }
     });
 
+    // 이번 달: 데이터 없으면 문구, 있으면 테이블
+    if (thisMonthRowsCount === 0) {
+        thisMonthEmpty.style.display = "block";
+        thisMonthTable.style.display = "none";
+    } else {
+        thisMonthEmpty.style.display = "none";
+        thisMonthTable.style.display = "table";
+    }
+
+    // 지난 달: 데이터 없으면 문구, 있으면 테이블 (단, 패널은 토글 열어야 보임)
+    if (lastMonthRowsCount === 0) {
+        lastMonthEmpty.style.display = "block";
+        lastMonthTable.style.display = "none";
+    } else {
+        lastMonthEmpty.style.display = "none";
+        lastMonthTable.style.display = "table";
+    }
+
+    // 이번 달 합계 표시
     document.getElementById("monthSales").textContent =
         monthTotal.toLocaleString() + " 원";
 
-    // 🔥 체크박스(입금 확인) 클릭 → 실시간 계산
+    // 체크박스(입금 확인) 클릭 → 실시간 계산
     document.querySelectorAll(".paid-check").forEach(chk => {
         chk.addEventListener("change", function () {
-
             const id = this.getAttribute("data-id");
             localStorage.setItem(`paid_${id}`, this.checked);
-
-            // ⭐ "teacher" 다시 계산 함수에 전달할 필요 없음 → CURRENT_TEACHER 사용
-            recalcMonthSales();
+            recalcMonthSales(); // 이번 달 합계만 재계산
         });
     });
 }
+
 
 
 /* ===========================================================
@@ -186,3 +294,4 @@ function logout() {
 
 </body>
 </html>
+
